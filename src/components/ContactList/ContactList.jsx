@@ -1,39 +1,63 @@
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getContacts, getFilter } from 'redux/contactSelectors';
-import { deleteContacts } from 'redux/contactsSlice';
-import { ListTitle, CardList, Card, DeleteBtn } from './ContactList.styled';
+import {
+  selectContacts,
+  selectError,
+  selectFilter,
+  selectIsLoading,
+} from 'redux/contactSelectors';
+import { getContactsThunk, deleteContactsThunk } from 'redux/contactsThunk';
+import {
+  ListTitle,
+  Loading,
+  CardList,
+  Card,
+  DeleteBtn,
+} from './ContactList.styled';
 
 export const ContactList = () => {
-  const contacts = useSelector(getContacts);
-  const filter = useSelector(getFilter);
+  const contacts = useSelector(selectContacts);
+  const filterTerm = useSelector(selectFilter);
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
   const dispatch = useDispatch();
 
-  function filteredContacts() {
-    const normalValue = filter.toLowerCase().trim();
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalValue)
-    );
+  useEffect(() => {
+    dispatch(getContactsThunk());
+  }, [dispatch]);
+
+  function filteredContactsList() {
+    const filter = filterTerm.toLowerCase().trim();
+    return Array.isArray(contacts)
+      ? contacts.filter(contact => contact.name.toLowerCase().includes(filter))
+      : [];
   }
+
+  const filteredContacts = filteredContactsList();
 
   return (
     <div>
       <ListTitle>Contacts list</ListTitle>
-      <CardList>
-        {filteredContacts().length > 0 &&
-          filteredContacts().map(({ name, number, id }) => (
+      {isLoading && !error && <Loading>Request in progress...</Loading>}
+      {!isLoading && (
+        <CardList>
+          {filteredContacts.reverse().map(({ name, number, id }) => (
             <Card key={id}>
               <p>
                 {name}: {number}
               </p>
               <DeleteBtn
                 type="button"
-                onClick={() => dispatch(deleteContacts(id))}
+                onClick={() => {
+                  dispatch(deleteContactsThunk(id));
+                }}
               >
                 Delete
               </DeleteBtn>
             </Card>
           ))}
-      </CardList>
+        </CardList>
+      )}
     </div>
   );
 };

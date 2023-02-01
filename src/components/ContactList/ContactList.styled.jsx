@@ -4,6 +4,10 @@ export const ListTitle = styled.h1`
   margin-left: 100px;
 `;
 
+export const Loading = styled.div`
+  margin-left: 100px;
+`;
+
 export const CardList = styled.ul`
   width: 350px;
   margin-left: 100px;

@@ -1,15 +1,14 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getContacts } from 'redux/contactSelectors';
-import { addContact } from 'redux/contactsSlice';
-import PropTypes from 'prop-types';
+import { selectContacts } from 'redux/contactSelectors';
+import { addContactsThunk } from 'redux/contactsThunk';
 import { Form, FormTitle, Input, FormBtn } from './ContactForm.styled';
 
 export function ContactForm() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
-  const contacts = useSelector(getContacts);
+  const contacts = useSelector(selectContacts);
   const dispatch = useDispatch();
 
   const handleInputChange = e => {
@@ -25,9 +24,8 @@ export function ContactForm() {
   function isSameContact(name, number) {
     return (
       contacts.find(
-        contact =>
-          contact.name.toLowerCase().trim() === name.toLowerCase().trim()
-      ) || contacts.find(contact => contact.number.trim() === number.trim())
+        contact => contact.name.toLowerCase() === name.toLowerCase()
+      ) || contacts.find(contact => contact.number === number)
     );
   }
 
@@ -38,7 +36,7 @@ export function ContactForm() {
     };
     isSameContact(name, number)
       ? alert('This contact is already exists')
-      : dispatch(addContact(contact));
+      : dispatch(addContactsThunk(contact));
   };
 
   const handleSubmit = e => {
@@ -74,13 +72,3 @@ export function ContactForm() {
     </Form>
   );
 }
-
-ContactForm.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.exact({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ),
-};
